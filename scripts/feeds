@@ -158,8 +158,8 @@ my %update_method = (
 		'init'          => "git clone --depth 1 '%s' '%s'",
 		'init_branch'   => "git clone --depth 1 --branch '%s' '%s' '%s'",
 		'init_commit'   => "git clone '%s' '%s' && cd '%s' && git checkout -b '%s' '%s' && cd -",
-		'update'	=> "git pull --ff",
-		'update_force'	=> "git pull --ff || (git reset --hard HEAD; git pull --ff; exit 1)",
+		'update'	=> "git pull --ff-only",
+		'update_force'	=> "git pull --ff-only || (git reset --hard HEAD; git pull --ff-only; exit 1)",
 		'post_update'	=> "git submodule update --init --recursive",
 		'controldir'	=> ".git",
 		'revision'	=> "git rev-parse --short HEAD | tr -d '\n'"},
@@ -536,7 +536,10 @@ sub install_src {
 	# If it's a core package and we don't want to override, just return
 	my $override = 0;
 	if (is_core_src($name)) {
-		return 0 unless $force;
+		if (!$force) {
+			warn "Not overriding core package $name; use -f to force\n";
+			return 0;
+		}
 		$override = 1;
 	}
 
